@@ -62,23 +62,26 @@ const createUrl = async function (req, res) {
             return res.status(200).send(res)
         }
 
-        if (!(/^(http(s)?:\/\/)[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/.test(longUrl))) {
+        // if (!(/^(http(s)?:\/\/)[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/.test(longUrl))) {
 
-            return res.status(400).send({ status: false, message: "please enter a valid URL" })
-        }
+        //     return res.status(400).send({ status: false, message: "please enter a valid URL" })
+        // }
 
         if (!ValidUrl.isUri(baseUrl)) {
             return res.status(401).send('Invalid base URL')
         }
         // This will generate the urlcode 
         const urlCode = shortId.generate().match(/[a-z\A-Z]/g).join("") //---this will give only Alphabet
+        
        // let urlCode = (Math.random()+1).toString(36).substring(7)
-        if (ValidUrl.isUri(longUrl)) {
+        if (!(ValidUrl.isUri(longUrl))) {
+            return res.status(400).send({status:false,msg:"invalid url"})
+        }
 
-            let url = await UrlModel.findOne({ longUrl:longUrl}).select({_id:0})
+            let url = await UrlModel.findOne({ longUrl:longUrl}).select({_id:0,createdAt:0,updatedAt:0})
             
             if (url ) {
-                    return res.status(400).send({ status: true, message: "This url is already shorten" , msg:url})
+                    return res.status(200).send({ status: true, message: "This url is already shorten" , msg:url})
 
                 } else {
                   // To create shorturl from adding the baseurl and urlcode
@@ -92,17 +95,15 @@ const createUrl = async function (req, res) {
                                     longUrl: created.longUrl,
                                     shortUrl: created.shortUrl,
                                     urlCode: created.urlCode
-                                }
-                    
+                                } 
                                 
-                 const saveShortUrl = await SET_ASYNC(`${urlCode}`, JSON.stringify(result.shortUrl))
+                 const saveShortUrl = await SET_ASYNC(`${urlCode}`, JSON.stringify(result))
                  console.log(saveShortUrl)
-                return res.status(201).send({ status: true,msg: "create successfully", data: result })
+                return res.status(201).send({ status: true,msg: "create successfully", data: result }).select({longUrl:longUrl,shortUrl:shortUrl,urlCode:urlCode})
             }
 
         }
-        
-   }
+    
     catch (err) {
 
         return res.status(500).send('Server Error')

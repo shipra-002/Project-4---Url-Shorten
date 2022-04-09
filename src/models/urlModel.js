@@ -12,7 +12,7 @@ const UrlSchema = new mongoose.Schema({
 longUrl:{
     type:String,
     required:true,
-    match: /[-a-zA-Z0-9@:%\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%\+.~#?&//=]*)?/gi,
+    
 
 },
 shortUrl:{
@@ -20,8 +20,8 @@ shortUrl:{
     required:true,
     unique:true
 
+}
 },
-},
-{versionKey:false}
+{timestamps:true}
 )
 module.exports = mongoose.model("url" , UrlSchema)
